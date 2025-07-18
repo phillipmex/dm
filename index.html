@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doña Malena - Menu</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#DC2626">
+    <meta name="description" content="Menu de antojitos Doña Malena - Martes a Domingo">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Prevent text selection */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Hide scrollbar but keep functionality */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Install prompt styling */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #DC2626;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+        
+        /* Button hover effects */
+        .btn-minus {
+            transition: all 0.2s ease;
+        }
+        .btn-minus:hover:not(:disabled) {
+            background-color: #DC2626;
+            transform: scale(1.05);
+        }
+        .btn-minus:disabled {
+            background-color: #D1D5DB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        
+        .btn-plus {
+            transition: all 0.2s ease;
+        }
+        .btn-plus:hover {
+            background-color: #16A34A;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="no-select bg-gray-50">
+    <!-- Install Prompt -->
+    <div id="installPrompt" class="install-prompt">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="font-bold">Instalar Doña Malena</div>
+                <div class="text-sm opacity-90">Agregar a pantalla de inicio</div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="hideInstallPrompt()" class="px-3 py-1 bg-white bg-opacity-20 rounded text-sm">Cancelar</button>
+                <button onclick="installApp()" class="px-3 py-1 bg-white text-red-600 rounded text-sm font-bold">Instalar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-md mx-auto bg-white min-h-screen">
+        <!-- Header -->
+        <div class="bg-blue-100 p-4 text-center">
+            <h1 class="text-3xl font-bold text-red-600 underline mb-2">Doña Malena</h1>
+            <div class="text-sm text-black mb-1">
+                <span>Laboramos de: </span>
+                <span class="text-red-600 underline">Martes a Domingo</span>
+            </div>
+            <div class="text-sm text-black mb-1">de 6:30 am a 12:00 pm</div>
+            <div class="text-sm font-bold text-black mb-1">LUNES NO LABORAMOS</div>
+            <div class="text-sm text-black mb-1">
+                <span class="text-red-600 font-bold">No</span> contamos con
+                <span class="text-red-600 underline">servicio a domicilio</span>
+            </div>
+            <div class="text-sm text-black mb-2">Gracias por su preferencia</div>
+            
+            <!-- Grand Total -->
+            <div class="bg-white p-2 rounded border-2 border-red-500">
+                <div class="text-lg font-bold text-red-600">
+                    TOTAL GENERAL: $<span id="grandTotal">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="p-4">
+            <h2 class="text-red-600 underline font-bold text-lg mb-2">Lista de Antojitos</h2>
+            
+            <!-- Table Header -->
+            <div class="grid grid-cols-4 gap-2 mb-2 text-sm font-bold border-b pb-2">
+                <div>Precio</div>
+                <div class="text-center">Qty</div>
+                <div class="text-center">Total</div>
+                <div></div>
+            </div>
+
+            <!-- Menu Items Container -->
+            <div id="menuContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- Special Sections -->
+        <div class="p-4 pt-0">
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-red-600 font-bold">Martes a domingo:</h3>
+                    <div class="text-red-600 underline">Tipos de carne:</div>
+                    <div class="text-sm ml-2">
+                        <div>Pollo</div>
+                        <div>Milanesa de cerdo empanizada</div>
+                        <div>Milanesa de cerdo roja (frita)</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-red-600 font-bold">Sábado y domingo:</h3>
+                    <div class="text-sm ml-2">Todas las anteriores</div>
+                </div>
+
+                <div>
+                    <h3 class="text-red-600 underline font-bold">Antojitos Doña Malena</h3>
+                    <div class="text-sm">
+                        Los <span class="text-red-600 font-bold">sábados</span> contamos con:
+                    </div>
+                    <div class="text-sm ml-2">
+                        <div>(Sandwichon, Sopa fría y Arrolladito)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menu data
+        const menuItems = [
+            { id: 'emp_carne', name: 'Empanadas c/carne', price: 8 },
+            { id: 'emp_hebra', name: 'Empanadas c/Q.hebra', price: 10 },
+            { id: 'panuchos', name: 'Panuchós', price: 18 },
+            { id: 'salbutes', name: 'Salbutes', price: 18 },
+            { id: 'sopes', name: 'Sopes', price: 25 },
+            { id: 'polcanes_s', name: 'Polcanes sencillos', price: 8 },
+            { id: 'polcanes_r', name: 'Polcanes rellenos c/carne', price: 20 },
+            { id: 'polcanes_q', name: 'Polcanes c/carne y queso', price: 25 },
+            { id: 'tortas_b', name: 'Tortas (Bolillo)', price: 35 },
+            { id: 'tortas_e', name: 'Tortas especiales (jamón, queso y pollo)', price: 38 },
+            { id: 'sandwiches', name: 'Sandwiches', price: 25 },
+            { id: 'especiales', name: '* especiales', price: 28 },
+            { id: 'burger_s', name: 'Hamburguesas sencilla', price: 55 },
+            { id: 'burger_p', name: 'Hamburguesas c/papas', price: 65 },
+            { id: 'burritacos', name: 'Burritacos', price: 20 },
+            { id: 'burritas', name: 'Burritas', price: 15 },
+            { id: 'relleno', name: 'Relleno negro (pollo)', price: 20 },
+            { id: 'platillos', name: 'Platillos fiesta', price: 50 },
+            { id: 'rebanada', name: 'Rebanada grande', price: 40 },
+            { id: 'coke_lite', name: 'Coke Lite 600ml', price: 30 }
+        ];
+
+        // State management
+        let quantities = {};
+
+        // PWA Installation
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallPrompt();
+        });
+
+        function showInstallPrompt() {
+            document.getElementById('installPrompt').style.display = 'block';
+        }
+
+        function hideInstallPrompt() {
+            document.getElementById('installPrompt').style.display = 'none';
+        }
+
+        async function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                hideInstallPrompt();
+            }
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // App functionality
+        function updateQuantity(itemId, change) {
+            const currentQty = quantities[itemId] || 0;
+            const newQty = Math.max(0, currentQty + change);
+            quantities[itemId] = newQty;
+            
+            updateDisplay(itemId);
+            updateGrandTotal();
+        }
+
+        function updateDisplay(itemId) {
+            const qty = quantities[itemId] || 0;
+            const item = menuItems.find(item => item.id === itemId);
+            const itemTotal = qty * item.price;
+            
+            document.getElementById(`qty-${itemId}`).textContent = qty;
+            document.getElementById(`total-${itemId}`).textContent = itemTotal;
+            
+            // Update button state
+            const minusBtn = document.getElementById(`minus-${itemId}`);
+            minusBtn.disabled = qty === 0;
+        }
+
+        function updateGrandTotal() {
+            const grandTotal = menuItems.reduce((total, item) => {
+                const qty = quantities[item.id] || 0;
+                return total + (qty * item.price);
+            }, 0);
+            
+            document.getElementById('grandTotal').textContent = grandTotal;
+        }
+
+        function renderMenuItems() {
+            const container = document.getElementById('menuContainer');
+            
+            menuItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'border-b pb-2';
+                itemDiv.innerHTML = `
+                    <div class="text-sm mb-1">${item.name}</div>
+                    <div class="grid grid-cols-4 gap-2 items-center">
+                        <div class="text-sm">$${item.price}</div>
+                        
+                        <!-- Quantity Controls -->
+                        <div class="flex items-center justify-center space-x-2">
+                            <button id="minus-${item.id}" onclick="updateQuantity('${item.id}', -1)"
+                                class="btn-minus w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold"
+                                disabled>
+                                −
+                            </button>
+                            <span id="qty-${item.id}" class="w-8 text-center text-sm font-bold">0</span>
+                            <button onclick="updateQuantity('${item.id}', 1)"
+                                class="btn-plus w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                +
+                            </button>
+                        </div>
+                        
+                        <!-- Item Total -->
+                        <div class="text-center text-sm font-bold">
+                            $<span id="total-${item.id}">0</span>
+                        </div>
+                        
+                        <div></div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenuItems();
+            updateGrandTotal();
+            
+            // Show install prompt after 5 seconds if not already installed
+            setTimeout(() => {
+                if (!window.matchMedia('(display-mode: standalone)').matches && !deferredPrompt) {
+                    // Only show if browser supports PWA but hasn't shown prompt yet
+                }
+            }, 5000);
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (event) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
